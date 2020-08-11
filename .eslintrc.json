@@ -1,0 +1,26 @@
+{
+  "extends": [
+    "enough",
+    "plugin:vue/recommended"
+  ],
+  "parserOptions": {
+    "parser": "babel-eslint"
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "require-atomic-updates": "off",
+    "vue/require-prop-types": "off",
+    "vue/require-default-prop": "off",
+    "vue/max-attributes-per-line": "off",
+    "vue/singleline-html-element-content-newline": "off",
+    "vue/multiline-html-element-content-newline": "off"
+  },
+  "globals": {
+    "DEBUG": false,
+    "CONFIG": false,
+    "BASE": false
+  }
+}
