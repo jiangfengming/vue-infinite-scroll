@@ -48,7 +48,7 @@ export default {
 
   props: {
     handler: Function,
-    loaded: Number,
+    head: {},
     next: {},
 
     direction: {
@@ -76,19 +76,19 @@ export default {
       }
     },
 
-    async loaded() {
+    head: 'setState',
+
+    next() {
       this.setState()
 
-      if (this.direction === 'up' && (!this.autoScroll || this.getScrollY() === 0)) {
-        this.restoreScrollPosition()
+      if (this.direction === 'up' && this.head && (!this.autoScroll || this.getScrollY() === 0)) {
+        this.restorePosition()
       }
 
       if (this.auto) {
         this.check()
       }
-    },
-
-    next: 'setState'
+    }
   },
 
   created() {
@@ -116,11 +116,11 @@ export default {
 
   methods: {
     setState() {
-      this.state = this.next == null || this.next
-        ? 'standby'
-        : this.loaded
-          ? 'end'
-          : 'empty'
+      this.state = this.next === '' || this.next === 0
+        ? this.head == null
+          ? 'empty'
+          : 'end'
+        : 'standby'
     },
 
     onClick() {
@@ -134,7 +134,7 @@ export default {
       this.error = null
 
       if (this.direction === 'up') {
-        this.saveScrollPosition()
+        this.savePosition()
       }
 
       try {
@@ -145,8 +145,33 @@ export default {
       }
     },
 
-    saveScrollPosition() {
-      this.lastScrollHeight = this.getScrollHeight()
+    savePosition() {
+      if (this.head) {
+        this.lastHead = this.head
+
+        this.spacing = this.head
+          ? document.querySelector(`[data-inf-id="${this.head}"]`).getBoundingClientRect().top -
+            this.$el.getBoundingClientRect().bottom
+          : 0
+      }
+    },
+
+    restorePosition() {
+      console.log('restorePosition')
+
+      const y = this.lastHead
+        ? this.getScrollY() +
+          document.querySelector(`[data-inf-id="${this.lastHead}"]`).getBoundingClientRect().top -
+          this.$el.getBoundingClientRect().bottom - this.spacing
+        : this.getScrollHeight() - this.getClientHeight()
+
+      this.scrollContainer.scrollTo(0, y)
+    },
+
+    getClientHeight() {
+      return this.scrollContainer === window
+        ? window.innerHeight
+        : this.scrollContainer.clientHeight
     },
 
     getScrollHeight() {
@@ -159,11 +184,6 @@ export default {
       return this.scrollContainer === window
         ? window.scrollY
         : this.scrollContainer.scrollTop
-    },
-
-    restoreScrollPosition() {
-      console.log('restoreScrollPosition')
-      this.scrollContainer.scrollTo(0, this.getScrollHeight() - this.lastScrollHeight + this.getScrollY())
     },
 
     check() {

@@ -1,15 +1,32 @@
 <template>
   <main>
     <button class="btn-reset" @click="reset">reset</button>
-    <InfiniteScroll direction="up" :loaded="items.length" :next="prevPage" :handler="loadPrevPage" />
+
+    <!-- v-if="items.length" -->
+
+    <InfiniteScroll
+      direction="up"
+      :head="items.length ? items[0].id : null"
+      :next="prev"
+      :handler="loadPrevPage"
+    />
 
     <ul>
-      <li v-for="item in items" :key="item.id" :style="{ background: `rgb(${item.color.join()})` }">
+      <li
+        v-for="item in items"
+        :key="item.id"
+        :data-inf-id="item.id"
+        :style="{ background: `rgb(${item.color.join()})` }"
+      >
         {{ item.id }}
       </li>
     </ul>
 
-    <InfiniteScroll :loaded="items.length" :next="nextPage" :handler="loadNextPage" />
+    <!-- <InfiniteScroll
+      :head="items.length ? items[items.length - 1].id : null"
+      :next="next"
+      :handler="loadNextPage"
+    /> -->
   </main>
 </template>
 
@@ -24,31 +41,38 @@ export default {
 
   data: () => ({
     items: [],
-    prevPage: 4,
-    nextPage: 5
+    prev: 4,
+    next: 5
   }),
 
   methods: {
     async loadNextPage() {
       console.log(Date.now(), 'loadNextPage')
-      const page = this.nextPage
+      const page = this.next
       const { items, totalCount } = await this.getMockData({ limit, page })
-      this.items = this.items.concat(items)
-      this.nextPage = totalCount / limit > page ? page + 1 : 0
+
+      if (page === this.next) {
+        this.items = this.items.concat(items)
+        this.next = totalCount / limit > page ? page + 1 : 0
+        console.log('next:', this.next)
+      }
     },
 
     async loadPrevPage() {
       console.log(Date.now(), 'loadPrevPage')
-      const page = this.prevPage
+      const page = this.prev
       const { items } = await this.getMockData({ limit, page })
-      this.items = items.concat(this.items)
-      this.prevPage = page - 1
-      console.log(this.prevPage)
+
+      if (page === this.prev) {
+        this.items = items.concat(this.items)
+        this.prev = page - 1
+        console.log('prev:', this.prev)
+      }
     },
 
     async getMockData({ limit = 10, page = 1 } = {}) {
-      console.log(limit, page)
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000))
+      console.log('page:', page)
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 2000))
 
       // if (Math.random() > 0.7) {
       //   throw new Error('server error')
@@ -72,7 +96,8 @@ export default {
 
     reset() {
       this.items = []
-      this.nextPage = 1
+      this.prev = 4
+      this.next = 5
     }
   }
 }
