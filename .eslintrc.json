@@ -17,10 +17,5 @@
     "vue/max-attributes-per-line": "off",
     "vue/singleline-html-element-content-newline": "off",
     "vue/multiline-html-element-content-newline": "off"
-  },
-  "globals": {
-    "DEBUG": false,
-    "CONFIG": false,
-    "BASE": false
   }
 }

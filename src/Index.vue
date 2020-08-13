@@ -1,24 +1,26 @@
 <template>
   <div class="infinite-scroll" @click="onClick">
-    <template v-if="state === 'loading'">
-      <slot name="loading">Loading...</slot>
-    </template>
+    <slot :state="state" :auto="auto" :direction="direction" :error="error">
+      <template v-if="state === 'loading'">
+        Loading...
+      </template>
 
-    <template v-else-if="state === 'standby' && !auto">
-      <slot name="standby">Click to load more</slot>
-    </template>
+      <template v-else-if="state === 'empty'">
+        Empty
+      </template>
 
-    <template v-else-if="state === 'empty'">
-      <slot name="empty">Empty</slot>
-    </template>
+      <template v-else-if="state === 'end'">
+        End
+      </template>
 
-    <template v-else-if="state === 'end'">
-      <slot name="end">End</slot>
-    </template>
+      <template v-else-if="state === 'error'">
+        An error occurred. Click to retry.
+      </template>
 
-    <template v-else-if="state === 'error'">
-      <slot name="error" :error="error">An error occurred. Click to retry</slot>
-    </template>
+      <template v-else-if="state === 'standby' && auto !== 'in-advance'">
+        {{ !auto ? 'Click to load more' : `Scroll ${direction} to load more` }}
+      </template>
+    </slot>
   </div>
 </template>
 
@@ -57,13 +59,13 @@ export default {
     },
 
     auto: {
-      type: Boolean,
-      default: true
+      default: 'in-advance' // in-advance, in-viewport
     }
   },
 
   data: () => ({
-    state: 'standby'
+    state: 'standby',
+    error: {}
   }),
 
   watch: {
@@ -81,11 +83,13 @@ export default {
     next() {
       this.setState()
 
-      if (this.direction === 'up' && this.head && (!this.autoScroll || this.getScrollY() === 0)) {
+      if (this.direction === 'up' && this.head != null &&
+        (!this.autoScroll || this.getScrollY() === 0 || this.auto === 'in-viewport' && this.inViewport())
+      ) {
         this.restorePosition()
       }
 
-      if (this.auto) {
+      if (this.auto === 'in-advance') {
         this.check()
       }
     }
@@ -106,7 +110,21 @@ export default {
 
     if (this.auto) {
       this.addListeners()
-      this.check()
+
+      if (this.auto === 'in-advance') {
+        this.check()
+      } else if (this.direction === 'up' && this.inViewport()) {
+        let y
+        const top = this.$el.getBoundingClientRect().top
+
+        if (this.scrollContainer === window) {
+          y = top + 1
+        } else {
+          y = top - this.scrollContainer.getBoundingClientRect().top + 1
+        }
+
+        this.scrollContainer.scrollBy(0, y)
+      }
     }
   },
 
@@ -146,20 +164,18 @@ export default {
     },
 
     savePosition() {
-      if (this.head) {
-        this.lastHead = this.head
+      this.lastHead = this.head
 
-        this.spacing = this.head
-          ? document.querySelector(`[data-inf-id="${this.head}"]`).getBoundingClientRect().top -
-            this.$el.getBoundingClientRect().bottom
-          : 0
-      }
+      this.spacing = this.head != null
+        ? document.querySelector(`[data-inf-id="${this.head}"]`).getBoundingClientRect().top -
+          this.$el.getBoundingClientRect().bottom
+        : 0
     },
 
     restorePosition() {
       console.log('restorePosition')
 
-      const y = this.lastHead
+      const y = this.lastHead != null
         ? this.getScrollY() +
           document.querySelector(`[data-inf-id="${this.lastHead}"]`).getBoundingClientRect().top -
           this.$el.getBoundingClientRect().bottom - this.spacing
@@ -187,20 +203,41 @@ export default {
     },
 
     check() {
-      if (this.state === 'standby' && !this.rafId) {
-        this.rafId = requestAnimationFrame(() => {
-          const y = this.getScrollY()
-          const h = this.getScrollHeight()
+      if (this.state === 'standby' && !this.timer) {
+        this.timer = setTimeout(() => {
+          this.timer = null
 
-          if (this.direction === 'down' && h - y < window.screen.height * 2 ||
-            this.direction === 'up' && y < window.screen.height
-          ) {
+          if (this.auto === 'in-advance' && this.isNear() || this.auto === 'in-viewport' && this.inViewport()) {
             this.load()
           }
-
-          this.rafId = null
         })
       }
+    },
+
+    isNear() {
+      const y = this.getScrollY()
+      const h = this.getScrollHeight()
+
+      return this.direction === 'down' && h - y < window.screen.height * 2 ||
+        this.direction === 'up' && y < window.screen.height
+    },
+
+    inViewport() {
+      const rect = this.$el.getBoundingClientRect()
+
+      if (this.scrollContainer === window) {
+        if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+          return true
+        }
+      } else {
+        const contRect = this.scrollContainer.getBoundingClientRect()
+
+        if (rect.top >= contRect.top && rect.bottom <= contRect.bottom) {
+          return true
+        }
+      }
+
+      return false
     },
 
     addListeners() {
@@ -221,7 +258,7 @@ export default {
   font-size: 0.8em;
   color: #666;
   margin: 1em 0;
-  height: 1.5em;
+  height: 2em;
   display: flex;
   align-items: center;
   justify-content: center;

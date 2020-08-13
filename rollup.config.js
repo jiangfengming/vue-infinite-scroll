@@ -3,7 +3,7 @@ import resolve from '@rollup/plugin-node-resolve'
 import vue from 'rollup-plugin-vue'
 
 export default {
-  input: 'src/index.js',
+  input: 'src/Index.vue',
 
   plugins: [
     resolve({

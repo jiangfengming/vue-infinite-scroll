@@ -2,16 +2,21 @@
   <main>
     <button class="btn-reset" @click="reset">reset</button>
 
-    <!-- v-if="items.length" -->
-
+    <!-- infinite scroll up -->
     <InfiniteScroll
+      v-if="items.length"
       direction="up"
+      auto="in-viewport"
       :head="items.length ? items[0].id : null"
       :next="prev"
       :handler="loadPrevPage"
     />
 
     <ul>
+      <!--
+        If you use upward infinite scroll, `data-inf-id` should be set.
+        If you use downward infinite scroll, it is not needed.
+      -->
       <li
         v-for="item in items"
         :key="item.id"
@@ -22,17 +27,18 @@
       </li>
     </ul>
 
-    <!-- <InfiniteScroll
+    <!-- infinite scroll down -->
+    <InfiniteScroll
       :head="items.length ? items[items.length - 1].id : null"
       :next="next"
       :handler="loadNextPage"
-    /> -->
+    />
   </main>
 </template>
 
 <script>
 import hslRgb from 'hsl-rgb'
-import InfiniteScroll from '../src/InfiniteScroll'
+import InfiniteScroll from '../src'
 
 const limit = 10
 

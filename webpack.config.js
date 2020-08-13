@@ -40,8 +40,8 @@ module.exports = (env, argv) => {
               loader: 'eslint-loader',
               options: {
                 rules: {
-                  'no-console': dev ? 'off' : 'error',
-                  'no-debugger': dev ? 'off' : 'error'
+                  'no-console': 'off',
+                  'no-debugger': 'off'
                 }
               }
             }
@@ -131,11 +131,17 @@ module.exports = (env, argv) => {
         if (chunk.name) {
           return chunk.name
         }
+
         const modules = Array.from(chunk.modulesIterable)
+
         if (modules.length > 1) {
           const joinedHash = hash(modules.map(m => m.id).join('_'))
           let len = nameLength
-          while (seen.has(joinedHash.substr(0, len))) len++
+
+          while (seen.has(joinedHash.substr(0, len))) {
+            len++
+          }
+
           seen.add(joinedHash.substr(0, len))
           return joinedHash.substr(0, len)
         } else {

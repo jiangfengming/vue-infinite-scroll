@@ -1,0 +1,35 @@
+
+.infinite-scroll[data-v-2964abc9] {
+  font-size: 0.8em;
+  color: #666;
+  margin: 1em 0;
+  height: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+main[data-v-3783d5fa] {
+  max-width: 600px;
+  margin: 0 auto;
+}
+ul[data-v-3783d5fa] {
+  padding: 0;
+}
+li[data-v-3783d5fa] {
+  margin: 10px;
+  list-style: none;
+  height: 128px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px
+}
+.btn-reset[data-v-3783d5fa] {
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
