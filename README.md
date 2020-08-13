@@ -7,7 +7,7 @@ npm i @jfm/vue-infinite-scroll
 ```
 
 ## Demo
-- [Link](http://jiangfengming.github.io/vue-infinite-scroll/demo/)
+- [Link](http://jiangfengming.github.io/vue-infinite-scroll/demo/index.html)
 - [Source code](demo-src/App.vue)
   
 ## Usage
