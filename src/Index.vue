@@ -1,6 +1,6 @@
 <template>
   <div class="infinite-scroll" @click="onClick">
-    <slot :state="state" :auto="auto" :direction="direction" :error="error">
+    <slot :state="state" :error="error" :auto="auto" :direction="direction">
       <template v-if="state === 'loading'">
         Loading...
       </template>
@@ -18,7 +18,7 @@
       </template>
 
       <template v-else-if="state === 'standby' && auto !== 'in-advance'">
-        {{ !auto ? 'Click to load more' : `Scroll ${direction} to load more` }}
+        {{ auto ? `Scroll ${direction} to load more` : 'Click to load more' }}
       </template>
     </slot>
   </div>

@@ -170,5 +170,27 @@ li {
 `handler`: The resource load function. It should return a promise. It should prepend/append results to the list,
   and set `next` cursor. If loading error, the promise should be rejected, then the component will show error state.
 
+## Slot
+```vue
+<InfiniteScroll ...>
+  <template v-slot="{ state, error, auto, direction }">
+    <template v-if="state === 'loading'">Loading...</template>
+    <template v-else-if="state === 'empty'">Empty</template>
+    <template v-else-if="state === 'end'">End</template>
+    <template v-else-if="state === 'error'">Error: {{ error.message }}. Click to retry</template>
+
+    <template v-else-if="state === 'standby' && auto !== 'in-advance'">
+      {{ auto ? `Scroll ${direction} to load more` : 'Click to load more' }}
+    </template>
+  </template>
+</InfiniteScroll>
+```
+
+### Slot props:
+- `state`: Includes `loading`, `empty`, `end`, `error`, `standby`.
+- `error`: The rejected value of `handler` function.
+- `auto`: `false`, `in-advance` or `in-viewport`.
+- `direction`: `up` or `down`.
+
 ## License
 [MIT](LICENSE)
