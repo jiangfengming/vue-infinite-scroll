@@ -10,15 +10,7 @@
       :head="items.length ? items[0].id : null"
       :next="prev"
       :handler="loadPrevPage"
-    >
-      <template v-slot="{ state }">
-        <template v-if="state === 'loading'">加载中...</template>
-        <template v-else-if="state === 'empty'">无数据</template>
-        <template v-else-if="state === 'end'">全部加载完毕</template>
-        <template v-else-if="state === 'error'">加载错误，点击重试</template>
-        <template v-else-if="state === 'standby'">向上滚动加载更多数据</template>
-      </template>
-    </InfiniteScroll>
+    />
 
     <ul>
       <!--
