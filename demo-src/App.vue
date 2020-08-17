@@ -7,7 +7,7 @@
       v-if="items.length"
       direction="up"
       auto="in-viewport"
-      :head="items.length ? items[0].id : null"
+      :head="items[0] && items[0].id"
       :next="prev"
       :handler="loadPrevPage"
     />
@@ -29,7 +29,7 @@
 
     <!-- infinite scroll down -->
     <InfiniteScroll
-      :head="items.length ? items[items.length - 1].id : null"
+      :head="items.length || null"
       :next="next"
       :handler="loadNextPage"
     />
@@ -59,7 +59,7 @@ export default {
 
       if (page === this.next) {
         this.items = this.items.concat(items)
-        this.next = totalCount / limit > page ? page + 1 : 0
+        this.next = totalCount / limit > page ? page + 1 : null
         console.log('next:', this.next)
       }
     },
@@ -71,7 +71,7 @@ export default {
 
       if (page === this.prev) {
         this.items = items.concat(this.items)
-        this.prev = page - 1
+        this.prev = page - 1 || null
         console.log('prev:', this.prev)
       }
     },

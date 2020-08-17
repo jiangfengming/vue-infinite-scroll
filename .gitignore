@@ -1,3 +1,5 @@
+.DS_Store
+
 # package lock files
 package-lock.json
 yarn.lock

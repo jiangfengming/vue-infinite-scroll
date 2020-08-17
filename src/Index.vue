@@ -78,8 +78,6 @@ export default {
       }
     },
 
-    head: 'setState',
-
     next() {
       this.setState()
 
@@ -134,7 +132,7 @@ export default {
 
   methods: {
     setState() {
-      this.state = this.next === '' || this.next === 0
+      this.state = this.next === null
         ? this.head == null
           ? 'empty'
           : 'end'

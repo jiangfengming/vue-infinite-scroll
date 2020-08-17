@@ -20,5 +20,7 @@ export default {
   output: {
     format: 'esm',
     file: 'dist/vue-infinite-scroll.js'
-  }
+  },
+
+  external: [/@babel\/runtime/]
 }

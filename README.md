@@ -21,7 +21,7 @@ npm i @jfm/vue-infinite-scroll
       v-if="items.length"
       direction="up"
       auto="in-viewport"
-      :head="items.length ? items[0].id : null"
+      :head="items[0] && items[0].id"
       :next="prev"
       :handler="loadPrevPage"
     />
@@ -43,7 +43,7 @@ npm i @jfm/vue-infinite-scroll
 
     <!-- infinite scroll down -->
     <InfiniteScroll
-      :head="items.length ? items[items.length - 1].id : null"
+      :head="items.length || null"
       :next="next"
       :handler="loadNextPage"
     />
@@ -52,7 +52,7 @@ npm i @jfm/vue-infinite-scroll
 
 <script>
 import hslRgb from 'hsl-rgb'
-import InfiniteScroll from '@jfm/vue-infinite-scroll'
+import InfiniteScroll from '../src'
 
 const limit = 10
 
@@ -73,7 +73,7 @@ export default {
 
       if (page === this.next) {
         this.items = this.items.concat(items)
-        this.next = totalCount / limit > page ? page + 1 : 0
+        this.next = totalCount / limit > page ? page + 1 : null
         console.log('next:', this.next)
       }
     },
@@ -85,7 +85,7 @@ export default {
 
       if (page === this.prev) {
         this.items = items.concat(this.items)
-        this.prev = page - 1
+        this.prev = page - 1 || null
         console.log('prev:', this.prev)
       }
     },
@@ -158,14 +158,27 @@ li {
   - `false`: Needs user to click the component to call the `handler` function manually.
   - `in-advance`: The `handler` function will be called automatically in advance of one screen height distance.
   - `in-viewport` The `handler` function will be called automatically when the component is fully in viewport.
-  
+
 `direction`: `up` or `down`. Defaults to `down`.
-  If `direction` is `up`, every item element should set `data-inf-id` attribute to their unique id.
-  It is used to adjust the scroll position.
+  If `direction` is `up`, every item element should set a `data-inf-id` attribute to a unique value.
+  (See usage section for example).
+  It is used to track and adjust the scroll position after loading.
 
-`head`: The last item's id if `direction` is `down`, otherwise the first item's id if `direction` is `up`.
+`head`:
+  - If the items array is empty, set it to `null`.
+  - If `direction` is `up`, it should be the first item's `data-inf-id` attribute value.
+    It will be used to track and adjust the scroll position.
+```vue
+<InfiniteScroll :head="items[0] && items[0].id">
+```
+  - If `direction` is `down`, you can simply set it to `items.length` if the items array is not empty.
+    So you don't need to care about the item's unique id.
+```vue
+<InfiniteScroll :head="items.length || null">
+```
 
-`next`: The next page number or cursor. If no more data, set it to `0` or empty string.
+`next`: The next page number or cursor. At initial state, you could set it to an empty string.
+  If there's no more data, set it to `null`.
 
 `handler`: The resource load function. It should return a promise. It should prepend/append results to the list,
   and set `next` cursor. If loading error, the promise should be rejected, then the component will show error state.
