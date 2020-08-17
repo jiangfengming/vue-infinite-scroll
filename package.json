@@ -1,6 +1,6 @@
 {
   "name": "@jfm/vue-infinite-scroll",
-  "version": "0.1.0-3",
+  "version": "0.1.0-4",
   "description": "A bidirectional infinite scroll component for Vue.js",
   "main": "dist/vue-infinite-scroll.js",
   "scripts": {
