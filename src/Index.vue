@@ -25,26 +25,6 @@
 </template>
 
 <script>
-function autoScrollTest() {
-  const y = window.scrollY
-  const child1 = createChild()
-  document.body.insertBefore(child1, document.body.firstChild)
-  window.scrollTo(0, 1)
-  const child2 = createChild()
-  document.body.insertBefore(child2, child1)
-  const result = window.scrollY !== 1
-  document.body.removeChild(child1)
-  document.body.removeChild(child2)
-  window.scrollTo(0, y)
-  return result
-
-  function createChild() {
-    const el = document.createElement('div')
-    el.style.height = '200vh'
-    return el
-  }
-}
-
 export default {
   name: 'InfiniteScroll',
 
@@ -81,8 +61,8 @@ export default {
     next() {
       this.setState()
 
-      if (this.direction === 'up' && this.head != null &&
-        (!this.autoScroll || this.getScrollY() === 0 || this.auto === 'in-viewport' && this.inViewport())
+      if (this.direction === 'up' && this.head &&
+        (this.scrollContainer !== window || !('overflowAnchor' in document.body.style) || this.getScrollY() === 0)
       ) {
         this.restorePosition()
       }
@@ -101,10 +81,6 @@ export default {
     this.scrollContainer = ['scroll', 'auto'].includes(window.getComputedStyle(this.$el.parentElement).overflowY)
       ? this.$el.parentElement
       : window
-
-    if (this.direction === 'up') {
-      this.autoScroll = this.scrollContainer === window ? autoScrollTest() : false
-    }
 
     if (this.auto) {
       this.addListeners()
@@ -133,9 +109,9 @@ export default {
   methods: {
     setState() {
       this.state = this.next === null
-        ? this.head == null
-          ? 'empty'
-          : 'end'
+        ? this.head
+          ? 'end'
+          : 'empty'
         : 'standby'
     },
 
@@ -164,7 +140,7 @@ export default {
     savePosition() {
       this.lastHead = this.head
 
-      this.spacing = this.head != null
+      this.spacing = this.head
         ? document.querySelector(`[data-inf-id="${this.head}"]`).getBoundingClientRect().top -
           this.$el.getBoundingClientRect().bottom
         : 0
@@ -173,7 +149,7 @@ export default {
     restorePosition() {
       console.log('restorePosition')
 
-      const y = this.lastHead != null
+      const y = this.lastHead
         ? this.getScrollY() +
           document.querySelector(`[data-inf-id="${this.lastHead}"]`).getBoundingClientRect().top -
           this.$el.getBoundingClientRect().bottom - this.spacing
@@ -260,5 +236,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-anchor: none;
 }
 </style>

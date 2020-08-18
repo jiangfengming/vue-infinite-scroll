@@ -27,26 +27,6 @@ import _asyncToGenerator from '@babel/runtime/helpers/asyncToGenerator';
 //
 //
 //
-function autoScrollTest() {
-  var y = window.scrollY;
-  var child1 = createChild();
-  document.body.insertBefore(child1, document.body.firstChild);
-  window.scrollTo(0, 1);
-  var child2 = createChild();
-  document.body.insertBefore(child2, child1);
-  var result = window.scrollY !== 1;
-  document.body.removeChild(child1);
-  document.body.removeChild(child2);
-  window.scrollTo(0, y);
-  return result;
-
-  function createChild() {
-    var el = document.createElement('div');
-    el.style.height = '200vh';
-    return el;
-  }
-}
-
 var script = {
   name: 'InfiniteScroll',
   props: {
@@ -80,7 +60,7 @@ var script = {
     next: function next() {
       this.setState();
 
-      if (this.direction === 'up' && this.head != null && (!this.autoScroll || this.getScrollY() === 0 || this.auto === 'in-viewport' && this.inViewport())) {
+      if (this.direction === 'up' && this.head && (this.scrollContainer !== window || !('overflowAnchor' in document.body.style) || this.getScrollY() === 0)) {
         this.restorePosition();
       }
 
@@ -94,10 +74,6 @@ var script = {
   },
   mounted: function mounted() {
     this.scrollContainer = ['scroll', 'auto'].includes(window.getComputedStyle(this.$el.parentElement).overflowY) ? this.$el.parentElement : window;
-
-    if (this.direction === 'up') {
-      this.autoScroll = this.scrollContainer === window ? autoScrollTest() : false;
-    }
 
     if (this.auto) {
       this.addListeners();
@@ -123,7 +99,7 @@ var script = {
   },
   methods: {
     setState: function setState() {
-      this.state = this.next === null ? this.head == null ? 'empty' : 'end' : 'standby';
+      this.state = this.next === null ? this.head ? 'end' : 'empty' : 'standby';
     },
     onClick: function onClick() {
       if (this.state === 'standby' || this.state === 'error') {
@@ -169,11 +145,11 @@ var script = {
     },
     savePosition: function savePosition() {
       this.lastHead = this.head;
-      this.spacing = this.head != null ? document.querySelector("[data-inf-id=\"" + this.head + "\"]").getBoundingClientRect().top - this.$el.getBoundingClientRect().bottom : 0;
+      this.spacing = this.head ? document.querySelector("[data-inf-id=\"" + this.head + "\"]").getBoundingClientRect().top - this.$el.getBoundingClientRect().bottom : 0;
     },
     restorePosition: function restorePosition() {
       console.log('restorePosition');
-      var y = this.lastHead != null ? this.getScrollY() + document.querySelector("[data-inf-id=\"" + this.lastHead + "\"]").getBoundingClientRect().top - this.$el.getBoundingClientRect().bottom - this.spacing : this.getScrollHeight() - this.getClientHeight();
+      var y = this.lastHead ? this.getScrollY() + document.querySelector("[data-inf-id=\"" + this.lastHead + "\"]").getBoundingClientRect().top - this.$el.getBoundingClientRect().bottom - this.spacing : this.getScrollHeight() - this.getClientHeight();
       this.scrollContainer.scrollTo(0, y);
     },
     getClientHeight: function getClientHeight() {
@@ -423,11 +399,11 @@ __vue_render__._withStripped = true;
   /* style */
   const __vue_inject_styles__ = function (inject) {
     if (!inject) return
-    inject("data-v-2c0eb7d2_0", { source: "\n.infinite-scroll[data-v-2c0eb7d2] {\n  font-size: 0.8em;\n  color: #666;\n  margin: 1em 0;\n  height: 2em;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n", map: {"version":3,"sources":["/Users/jfm/projects/vue-infinite-scroll/src/Index.vue"],"names":[],"mappings":";AA8PA;EACA,gBAAA;EACA,WAAA;EACA,aAAA;EACA,WAAA;EACA,aAAA;EACA,mBAAA;EACA,uBAAA;AACA","file":"Index.vue","sourcesContent":["<template>\n  <div class=\"infinite-scroll\" @click=\"onClick\">\n    <slot :state=\"state\" :error=\"error\" :auto=\"auto\" :direction=\"direction\">\n      <template v-if=\"state === 'loading'\">\n        Loading...\n      </template>\n\n      <template v-else-if=\"state === 'empty'\">\n        Empty\n      </template>\n\n      <template v-else-if=\"state === 'end'\">\n        End\n      </template>\n\n      <template v-else-if=\"state === 'error'\">\n        An error occurred. Click to retry.\n      </template>\n\n      <template v-else-if=\"state === 'standby' && auto !== 'in-advance'\">\n        {{ auto ? `Scroll ${direction} to load more` : 'Click to load more' }}\n      </template>\n    </slot>\n  </div>\n</template>\n\n<script>\nfunction autoScrollTest() {\n  const y = window.scrollY\n  const child1 = createChild()\n  document.body.insertBefore(child1, document.body.firstChild)\n  window.scrollTo(0, 1)\n  const child2 = createChild()\n  document.body.insertBefore(child2, child1)\n  const result = window.scrollY !== 1\n  document.body.removeChild(child1)\n  document.body.removeChild(child2)\n  window.scrollTo(0, y)\n  return result\n\n  function createChild() {\n    const el = document.createElement('div')\n    el.style.height = '200vh'\n    return el\n  }\n}\n\nexport default {\n  name: 'InfiniteScroll',\n\n  props: {\n    handler: Function,\n    head: {},\n    next: {},\n\n    direction: {\n      type: String,\n      default: 'down'\n    },\n\n    auto: {\n      default: 'in-advance' // in-advance, in-viewport\n    }\n  },\n\n  data: () => ({\n    state: 'standby',\n    error: {}\n  }),\n\n  watch: {\n    auto(b) {\n      if (b) {\n        this.addListeners()\n        this.check()\n      } else {\n        this.removeListeners()\n      }\n    },\n\n    next() {\n      this.setState()\n\n      if (this.direction === 'up' && this.head != null &&\n        (!this.autoScroll || this.getScrollY() === 0 || this.auto === 'in-viewport' && this.inViewport())\n      ) {\n        this.restorePosition()\n      }\n\n      if (this.auto === 'in-advance') {\n        this.check()\n      }\n    }\n  },\n\n  created() {\n    this.setState()\n  },\n\n  mounted() {\n    this.scrollContainer = ['scroll', 'auto'].includes(window.getComputedStyle(this.$el.parentElement).overflowY)\n      ? this.$el.parentElement\n      : window\n\n    if (this.direction === 'up') {\n      this.autoScroll = this.scrollContainer === window ? autoScrollTest() : false\n    }\n\n    if (this.auto) {\n      this.addListeners()\n\n      if (this.auto === 'in-advance') {\n        this.check()\n      } else if (this.direction === 'up' && this.inViewport()) {\n        let y\n        const top = this.$el.getBoundingClientRect().top\n\n        if (this.scrollContainer === window) {\n          y = top + 1\n        } else {\n          y = top - this.scrollContainer.getBoundingClientRect().top + 1\n        }\n\n        this.scrollContainer.scrollBy(0, y)\n      }\n    }\n  },\n\n  destroyed() {\n    this.removeListeners()\n  },\n\n  methods: {\n    setState() {\n      this.state = this.next === null\n        ? this.head == null\n          ? 'empty'\n          : 'end'\n        : 'standby'\n    },\n\n    onClick() {\n      if (this.state === 'standby' || this.state === 'error') {\n        this.load()\n      }\n    },\n\n    async load() {\n      this.state = 'loading'\n      this.error = null\n\n      if (this.direction === 'up') {\n        this.savePosition()\n      }\n\n      try {\n        await this.handler()\n      } catch (e) {\n        this.state = 'error'\n        this.error = e\n      }\n    },\n\n    savePosition() {\n      this.lastHead = this.head\n\n      this.spacing = this.head != null\n        ? document.querySelector(`[data-inf-id=\"${this.head}\"]`).getBoundingClientRect().top -\n          this.$el.getBoundingClientRect().bottom\n        : 0\n    },\n\n    restorePosition() {\n      console.log('restorePosition')\n\n      const y = this.lastHead != null\n        ? this.getScrollY() +\n          document.querySelector(`[data-inf-id=\"${this.lastHead}\"]`).getBoundingClientRect().top -\n          this.$el.getBoundingClientRect().bottom - this.spacing\n        : this.getScrollHeight() - this.getClientHeight()\n\n      this.scrollContainer.scrollTo(0, y)\n    },\n\n    getClientHeight() {\n      return this.scrollContainer === window\n        ? window.innerHeight\n        : this.scrollContainer.clientHeight\n    },\n\n    getScrollHeight() {\n      return this.scrollContainer === window\n        ? document.documentElement.scrollHeight\n        : this.scrollContainer.scrollHeight\n    },\n\n    getScrollY() {\n      return this.scrollContainer === window\n        ? window.scrollY\n        : this.scrollContainer.scrollTop\n    },\n\n    check() {\n      if (this.state === 'standby' && !this.timer) {\n        this.timer = setTimeout(() => {\n          this.timer = null\n\n          if (this.auto === 'in-advance' && this.isNear() || this.auto === 'in-viewport' && this.inViewport()) {\n            this.load()\n          }\n        })\n      }\n    },\n\n    isNear() {\n      const y = this.getScrollY()\n      const h = this.getScrollHeight()\n\n      return this.direction === 'down' && h - y < window.screen.height * 2 ||\n        this.direction === 'up' && y < window.screen.height\n    },\n\n    inViewport() {\n      const rect = this.$el.getBoundingClientRect()\n\n      if (this.scrollContainer === window) {\n        if (rect.top >= 0 && rect.bottom <= window.innerHeight) {\n          return true\n        }\n      } else {\n        const contRect = this.scrollContainer.getBoundingClientRect()\n\n        if (rect.top >= contRect.top && rect.bottom <= contRect.bottom) {\n          return true\n        }\n      }\n\n      return false\n    },\n\n    addListeners() {\n      this.scrollContainer.addEventListener('scroll', this.check)\n      window.addEventListener('resize', this.check)\n    },\n\n    removeListeners() {\n      this.scrollContainer.removeEventListener('scroll', this.check)\n      window.removeEventListener('resize', this.check)\n    }\n  }\n}\n</script>\n\n<style scoped>\n.infinite-scroll {\n  font-size: 0.8em;\n  color: #666;\n  margin: 1em 0;\n  height: 2em;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n</style>\n"]}, media: undefined });
+    inject("data-v-1a45561e_0", { source: "\n.infinite-scroll[data-v-1a45561e] {\n  font-size: 0.8em;\n  color: #666;\n  margin: 1em 0;\n  height: 2em;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  overflow-anchor: none;\n}\n", map: {"version":3,"sources":["/Users/jfm/projects/vue-infinite-scroll/src/Index.vue"],"names":[],"mappings":";AAsOA;EACA,gBAAA;EACA,WAAA;EACA,aAAA;EACA,WAAA;EACA,aAAA;EACA,mBAAA;EACA,uBAAA;EACA,qBAAA;AACA","file":"Index.vue","sourcesContent":["<template>\n  <div class=\"infinite-scroll\" @click=\"onClick\">\n    <slot :state=\"state\" :error=\"error\" :auto=\"auto\" :direction=\"direction\">\n      <template v-if=\"state === 'loading'\">\n        Loading...\n      </template>\n\n      <template v-else-if=\"state === 'empty'\">\n        Empty\n      </template>\n\n      <template v-else-if=\"state === 'end'\">\n        End\n      </template>\n\n      <template v-else-if=\"state === 'error'\">\n        An error occurred. Click to retry.\n      </template>\n\n      <template v-else-if=\"state === 'standby' && auto !== 'in-advance'\">\n        {{ auto ? `Scroll ${direction} to load more` : 'Click to load more' }}\n      </template>\n    </slot>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'InfiniteScroll',\n\n  props: {\n    handler: Function,\n    head: {},\n    next: {},\n\n    direction: {\n      type: String,\n      default: 'down'\n    },\n\n    auto: {\n      default: 'in-advance' // in-advance, in-viewport\n    }\n  },\n\n  data: () => ({\n    state: 'standby',\n    error: {}\n  }),\n\n  watch: {\n    auto(b) {\n      if (b) {\n        this.addListeners()\n        this.check()\n      } else {\n        this.removeListeners()\n      }\n    },\n\n    next() {\n      this.setState()\n\n      if (this.direction === 'up' && this.head &&\n        (this.scrollContainer !== window || !('overflowAnchor' in document.body.style) || this.getScrollY() === 0)\n      ) {\n        this.restorePosition()\n      }\n\n      if (this.auto === 'in-advance') {\n        this.check()\n      }\n    }\n  },\n\n  created() {\n    this.setState()\n  },\n\n  mounted() {\n    this.scrollContainer = ['scroll', 'auto'].includes(window.getComputedStyle(this.$el.parentElement).overflowY)\n      ? this.$el.parentElement\n      : window\n\n    if (this.auto) {\n      this.addListeners()\n\n      if (this.auto === 'in-advance') {\n        this.check()\n      } else if (this.direction === 'up' && this.inViewport()) {\n        let y\n        const top = this.$el.getBoundingClientRect().top\n\n        if (this.scrollContainer === window) {\n          y = top + 1\n        } else {\n          y = top - this.scrollContainer.getBoundingClientRect().top + 1\n        }\n\n        this.scrollContainer.scrollBy(0, y)\n      }\n    }\n  },\n\n  destroyed() {\n    this.removeListeners()\n  },\n\n  methods: {\n    setState() {\n      this.state = this.next === null\n        ? this.head\n          ? 'end'\n          : 'empty'\n        : 'standby'\n    },\n\n    onClick() {\n      if (this.state === 'standby' || this.state === 'error') {\n        this.load()\n      }\n    },\n\n    async load() {\n      this.state = 'loading'\n      this.error = null\n\n      if (this.direction === 'up') {\n        this.savePosition()\n      }\n\n      try {\n        await this.handler()\n      } catch (e) {\n        this.state = 'error'\n        this.error = e\n      }\n    },\n\n    savePosition() {\n      this.lastHead = this.head\n\n      this.spacing = this.head\n        ? document.querySelector(`[data-inf-id=\"${this.head}\"]`).getBoundingClientRect().top -\n          this.$el.getBoundingClientRect().bottom\n        : 0\n    },\n\n    restorePosition() {\n      console.log('restorePosition')\n\n      const y = this.lastHead\n        ? this.getScrollY() +\n          document.querySelector(`[data-inf-id=\"${this.lastHead}\"]`).getBoundingClientRect().top -\n          this.$el.getBoundingClientRect().bottom - this.spacing\n        : this.getScrollHeight() - this.getClientHeight()\n\n      this.scrollContainer.scrollTo(0, y)\n    },\n\n    getClientHeight() {\n      return this.scrollContainer === window\n        ? window.innerHeight\n        : this.scrollContainer.clientHeight\n    },\n\n    getScrollHeight() {\n      return this.scrollContainer === window\n        ? document.documentElement.scrollHeight\n        : this.scrollContainer.scrollHeight\n    },\n\n    getScrollY() {\n      return this.scrollContainer === window\n        ? window.scrollY\n        : this.scrollContainer.scrollTop\n    },\n\n    check() {\n      if (this.state === 'standby' && !this.timer) {\n        this.timer = setTimeout(() => {\n          this.timer = null\n\n          if (this.auto === 'in-advance' && this.isNear() || this.auto === 'in-viewport' && this.inViewport()) {\n            this.load()\n          }\n        })\n      }\n    },\n\n    isNear() {\n      const y = this.getScrollY()\n      const h = this.getScrollHeight()\n\n      return this.direction === 'down' && h - y < window.screen.height * 2 ||\n        this.direction === 'up' && y < window.screen.height\n    },\n\n    inViewport() {\n      const rect = this.$el.getBoundingClientRect()\n\n      if (this.scrollContainer === window) {\n        if (rect.top >= 0 && rect.bottom <= window.innerHeight) {\n          return true\n        }\n      } else {\n        const contRect = this.scrollContainer.getBoundingClientRect()\n\n        if (rect.top >= contRect.top && rect.bottom <= contRect.bottom) {\n          return true\n        }\n      }\n\n      return false\n    },\n\n    addListeners() {\n      this.scrollContainer.addEventListener('scroll', this.check)\n      window.addEventListener('resize', this.check)\n    },\n\n    removeListeners() {\n      this.scrollContainer.removeEventListener('scroll', this.check)\n      window.removeEventListener('resize', this.check)\n    }\n  }\n}\n</script>\n\n<style scoped>\n.infinite-scroll {\n  font-size: 0.8em;\n  color: #666;\n  margin: 1em 0;\n  height: 2em;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  overflow-anchor: none;\n}\n</style>\n"]}, media: undefined });
 
   };
   /* scoped */
-  const __vue_scope_id__ = "data-v-2c0eb7d2";
+  const __vue_scope_id__ = "data-v-1a45561e";
   /* module identifier */
   const __vue_module_identifier__ = undefined;
   /* functional template */

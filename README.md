@@ -43,7 +43,7 @@ npm i @jfm/vue-infinite-scroll
 
     <!-- infinite scroll down -->
     <InfiniteScroll
-      :head="items.length || null"
+      :head="items.length"
       :next="next"
       :handler="loadNextPage"
     />
@@ -105,7 +105,7 @@ export default {
 
       for (let i = start; i < end; i++) {
         const color = hslRgb(360 / (totalCount - 1) * i, 0.67, 0.67)
-        items.push({ id: i, color })
+        items.push({ id: i + 1, color })
       }
 
       return {
@@ -165,20 +165,20 @@ li {
   It is used to track and adjust the scroll position after loading.
 
 `head`:
-  - If the items array is empty, set it to `null`.
-  - If `direction` is `up`, it should be the first item's `data-inf-id` attribute value.
-    It will be used to track and adjust the scroll position.
+  - If the items array is empty, set it to a falsey false, such as `null`.
+  - If `direction` is `up`, set it to the first item's `data-inf-id` attribute value.
+    It will be used to track and adjust the scroll position. If item's id is number `0`, convert it to string.
 ```vue
 <InfiniteScroll :head="items[0] && items[0].id">
 ```
   - If `direction` is `down`, you can simply set it to `items.length` if the items array is not empty.
     So you don't need to care about the item's unique id.
 ```vue
-<InfiniteScroll :head="items.length || null">
+<InfiniteScroll :head="items.length">
 ```
 
-`next`: The next page number or cursor. At initial state, you could set it to an empty string.
-  If there's no more data, set it to `null`.
+`next`: The next page number or cursor. At initial state, if you don't know the cursor value,
+  you could set it to an empty string. If there's no more data, set it to `null`.
 
 `handler`: The resource load function. It should return a promise. It should prepend/append results to the list,
   and set `next` cursor. If loading error, the promise should be rejected, then the component will show error state.

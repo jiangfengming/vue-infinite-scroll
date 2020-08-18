@@ -29,7 +29,7 @@
 
     <!-- infinite scroll down -->
     <InfiniteScroll
-      :head="items.length || null"
+      :head="items.length"
       :next="next"
       :handler="loadNextPage"
     />
@@ -91,7 +91,7 @@ export default {
 
       for (let i = start; i < end; i++) {
         const color = hslRgb(360 / (totalCount - 1) * i, 0.67, 0.67)
-        items.push({ id: i, color })
+        items.push({ id: i + 1, color })
       }
 
       return {
