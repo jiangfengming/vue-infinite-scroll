@@ -35,7 +35,7 @@ npm i @jfm/vue-infinite-scroll
         v-for="item in items"
         :key="item.id"
         :data-inf-id="item.id"
-        :style="{ background: `rgb(${item.color.join()})` }"
+        :style="{ background: `hsl(${item.color.join()})` }"
       >
         {{ item.id }}
       </li>
@@ -51,7 +51,6 @@ npm i @jfm/vue-infinite-scroll
 </template>
 
 <script>
-import hslRgb from 'hsl-rgb'
 import InfiniteScroll from '../src'
 
 const limit = 10
@@ -104,7 +103,7 @@ export default {
       const items = []
 
       for (let i = start; i < end; i++) {
-        const color = hslRgb(360 / (totalCount - 1) * i, 0.67, 0.67)
+        const color = [360 / (totalCount - 1) * i, '67%', '67%']
         items.push({ id: i + 1, color })
       }
 
