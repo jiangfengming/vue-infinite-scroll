@@ -78,9 +78,7 @@ export default {
   },
 
   mounted() {
-    this.scrollContainer = ['scroll', 'auto'].includes(window.getComputedStyle(this.$el.parentElement).overflowY)
-      ? this.$el.parentElement
-      : window
+    this.scrollContainer = this.getScrollContainer(this.$el)
 
     if (this.auto) {
       this.addListeners()
@@ -107,6 +105,20 @@ export default {
   },
 
   methods: {
+    getScrollContainer(el) {
+      const parent = el.parentNode
+
+      if (parent === document.body) {
+        return window
+      } else {
+        if (['scroll', 'auto'].includes(window.getComputedStyle(parent).overflowY)) {
+          return parent
+        } else {
+          return this.getScrollContainer(parent)
+        }
+      }
+    },
+
     setState() {
       this.state = this.next === null
         ? this.head
