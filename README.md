@@ -186,7 +186,7 @@ li {
   and set `next` cursor. If loading error, the promise should be rejected, then the component will show error state.
 
 ## Slot
-```vue
+```html
 <InfiniteScroll ...>
   <template v-slot="{ state, error, auto, direction }">
     <template v-if="state === 'loading'">Loading...</template>
