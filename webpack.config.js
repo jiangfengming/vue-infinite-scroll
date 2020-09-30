@@ -1,5 +1,6 @@
 const path = require('path')
 const webpack = require('webpack')
+const ESLintPlugin = require('eslint-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -11,12 +12,13 @@ module.exports = (env, argv) => {
 
   const conf = {
     mode: dev ? 'development' : 'production',
-    devtool: dev ? 'eval-source-map' : 'hidden-source-map',
+    devtool: dev ? 'eval-source-map' : 'source-map',
     entry: './demo-src/index.js',
 
     optimization: dev ? {} : {
       runtimeChunk: 'single',
       moduleIds: 'hashed',
+
       splitChunks: {
         chunks: 'all'
       }
@@ -32,30 +34,12 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          enforce: 'pre',
-          test: /\.(mjs|js|vue)$/,
-          exclude: /node_modules/,
-          use: [
-            {
-              loader: 'eslint-loader',
-              options: {
-                rules: {
-                  'no-console': 'off',
-                  'no-debugger': 'off'
-                }
-              }
-            }
-          ]
-        },
-
-        {
           test: /\.vue$/,
           use: ['vue-loader']
         },
 
         {
           test: /\.(mjs|js)$/,
-          include: path.resolve(__dirname, 'demo-src'),
           use: ['babel-loader']
         },
 
@@ -66,6 +50,7 @@ module.exports = (env, argv) => {
 
         {
           test: /\.css$/,
+
           use: [
             dev ? 'style-loader' : MiniCssExtractPlugin.loader,
             'css-loader',
@@ -75,9 +60,11 @@ module.exports = (env, argv) => {
 
         {
           test: /\.(png|jpg|jpeg|gif|eot|ttf|woff|woff2|svg|svgz|mp3)(\?.+)?$/,
+
           use: [
             {
               loader: 'url-loader',
+
               options: {
                 limit: 4096,
                 esModule: false
@@ -89,6 +76,10 @@ module.exports = (env, argv) => {
     },
 
     plugins: [
+      new ESLintPlugin({
+        extensions: ['js', 'vue']
+      }),
+
       new VueLoaderPlugin(),
 
       new HtmlWebpackPlugin({
@@ -110,6 +101,7 @@ module.exports = (env, argv) => {
     conf.devServer = {
       host: '0.0.0.0',
       disableHostCheck: true,
+
       historyApiFallback: {
         index: '/',
         disableDotRule: true

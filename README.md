@@ -9,9 +9,12 @@ npm i @jfm/vue-infinite-scroll
 ## Demo
 - [Link](http://jiangfengming.github.io/vue-infinite-scroll/demo/index.html)
 - [Source code](demo-src/App.vue)
-  
+
+## Requirements:
+* [@babel/plugin-transform-runtime](https://babeljs.io/docs/en/babel-plugin-transform-runtime)
+
 ## Usage
-```vue
+```html
 <template>
   <main>
     <button class="btn-reset" @click="reset">reset</button>
@@ -51,7 +54,7 @@ npm i @jfm/vue-infinite-scroll
 </template>
 
 <script>
-import InfiniteScroll from '../src'
+import InfiniteScroll from '@jfm/vue-infinite-scroll'
 
 const limit = 10
 
